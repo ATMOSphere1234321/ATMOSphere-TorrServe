@@ -1,6 +1,10 @@
 *.iml
 .gradle
 /local.properties
+# ATMOSphere build helper writes a debug-signed placeholder keystore
+# config here; AOSP re-signs with the platform key at image-assembly
+# time so this file never needs to be committed.
+keystore.properties
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
