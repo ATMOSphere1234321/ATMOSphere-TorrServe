@@ -1,0 +1,48 @@
+# DISABLED 2026-05-20 per User mandate (verbatim):
+# "Make sure that are all GitHub actions and GitLab pipelines disabled!
+#  We MUST RUN them in local environment only!"
+#
+# Phase 39.GF — All remote CI surfaces (GitHub Actions, GitLab pipelines)
+# across parent + 10 owned submodules + HelixQA deps + Containers + constitution
+# disabled — file extension changed to '.disabled-local-only' so GitHub Actions
+# does NOT recognise it (only .yml / .yaml are honoured under .github/workflows/).
+#
+# This file's enforcement migrated to local-only:
+# - scripts/git_hooks/{pre-commit,pre-push,post-commit,commit-msg}
+# - scripts/commit_all.sh §11.4.65 pre-stage check
+# - device/rockchip/rk3588/tests/pre_build_verification.sh (~600+ gates)
+# - scripts/testing/meta_test_false_positive_proof.sh (paired mutations)
+#
+# To re-enable for emergency manual run:
+#   1. Rename back to .yml: mv <file>.disabled-local-only <file>.yml
+#   2. The original 'on:' triggers below are preserved as-is.
+#
+# Canonical authority: constitution/Constitution.md §11.4.75 (Layer 5
+# migrated from remote CI to local-only enforcement on this date).
+# ============================================================================
+
+name: Android CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'adopt'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew build
