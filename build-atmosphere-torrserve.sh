@@ -65,7 +65,19 @@ if [ -n "${JAVA_HOME:-}" ]; then
     "$JAVA_HOME/bin/java" -version 2>&1 | head -1
 fi
 
-# Provide keystore.properties if missing (debug-signed; AOSP re-signs).
+# Provide keystore.properties if missing OR stale (debug-signed; AOSP re-signs).
+# A stale keystore.properties (e.g. one committed from another machine/user with
+# a foreign storeFile like /home/builder/.android/debug.keystore) makes
+# :app:validateSigningRelease FAIL on this host. Regenerate when absent OR when
+# its referenced storeFile does not exist here. The file is .gitignored
+# ("DO NOT COMMIT") so regeneration is always safe + reproducible.
+if [ -f keystore.properties ]; then
+    _KS_REF=$(sed -n 's/^storeFile=//p' keystore.properties 2>/dev/null | head -1)
+    if [ -z "$_KS_REF" ] || [ ! -f "$_KS_REF" ]; then
+        echo "[ATMOSphere-TorrServe] stale keystore.properties (storeFile '$_KS_REF' missing on this host) — regenerating"
+        rm -f keystore.properties
+    fi
+fi
 if [ ! -f keystore.properties ]; then
     _DEBUG_KS="$HOME/.android/debug.keystore"
     if [ ! -f "$_DEBUG_KS" ]; then
